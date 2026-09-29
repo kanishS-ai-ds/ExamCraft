@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamCraft - Intelligent Test Paper Generator & Evaluation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">⚡</div>
+                <div class="brand-text">
+                    <h2>ExamCraft</h2>
+                    <span>DBMS</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-tab="generator">
+                    <span class="nav-icon">🎲</span>
+                    <span>Paper Generator</span>
+                </button>
+                <button class="nav-item" data-tab="questions">
+                    <span class="nav-icon">📚</span>
+                    <span>Question Bank</span>
+                </button>
+                <button class="nav-item" data-tab="units">
+                    <span class="nav-icon">📑</span>
+                    <span>Units</span>
+                </button>
+                <button class="nav-item" data-tab="test-papers">
+                    <span class="nav-icon">📜</span>
+                    <span>Generated Papers</span>
+                </button>
+                <button class="nav-item" data-tab="exam-room">
+                    <span class="nav-icon">✍️</span>
+                    <span>Student Exam Room</span>
+                </button>
+                <button class="nav-item" data-tab="usage-analytics">
+                    <span class="nav-icon">📈</span>
+                    <span>Question Usage</span>
+                </button>
+                <button class="nav-item" data-tab="attempts">
+                    <span class="nav-icon">🏆</span>
+                    <span>Attempts & Grades</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="dot online"></span>
+                    <span>Backend Live (MySQL)</span>
+                </div>
+                <small class="version-tag">ExamCraft v1.0 • Java DBMS</small>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Topbar Header -->
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h1 id="pageTitle">System Overview</h1>
+                    <p id="pageSubtitle">Real-time statistics and automated question-paper management</p>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-secondary" onclick="refreshCurrentTab()">
+                        🔄 Refresh Data
+                    </button>
+                    <button class="btn btn-primary" onclick="openModal('generateModal')">
+                        + Generate Test Paper
+                    </button>
+                </div>
+            </header>
+
+            <!-- Alert Toast Container -->
+            <div id="toastContainer" class="toast-container"></div>
+
+            <!-- Tab 1: Dashboard -->
+            <section id="tab-dashboard" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Total Questions</span>
+                            <span class="stat-icon purple">❓</span>
+                        </div>
+                        <div class="stat-value" id="statQuestions">0</div>
+                        <div class="stat-sub" id="statDifficultySplit">0 Easy • 0 Med • 0 Hard</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Total Units</span>
+                            <span class="stat-icon blue">📁</span>
+                        </div>
+                        <div class="stat-value" id="statUnits">0</div>
+                        <div class="stat-sub">Syllabus Modules Tagged</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Papers Generated</span>
+                            <span class="stat-icon amber">📜</span>
+                        </div>
+                        <div class="stat-value" id="statPapers">0</div>
+                        <div class="stat-sub">Randomized & Duplicate-Free</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Student Attempts</span>
+                            <span class="stat-icon green">🎯</span>
+                        </div>
+                        <div class="stat-value" id="statAttempts">0</div>
+                        <div class="stat-sub" id="statAvgScore">Avg Score: 0%</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-sections">
+                    <div class="card recent-papers-card">
+                        <div class="card-header">
+                            <h3>Recently Generated Test Papers</h3>
+                            <button class="btn btn-sm btn-outline" onclick="switchTab('test-papers')">View All</button>
+                        </div>
+                        <div id="recentPapersList" class="papers-list-compact">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="card quick-actions-card">
+                        <div class="card-header">
+                            <h3>Core Features Quick Access</h3>
+                        </div>
+                        <div class="quick-grid">
+                            <div class="action-tile" onclick="openModal('generateModal')">
+                                <span class="tile-icon">🎲</span>
+                                <h4>Auto-Generate Paper</h4>
+                                <p>Set difficulty mix (% easy, med, hard) & auto-select unique questions</p>
+                            </div>
+                            <div class="action-tile" onclick="openModal('addQuestionModal')">
+                                <span class="tile-icon">➕</span>
+                                <h4>Add New Question</h4>
+                                <p>Tag question by Unit, Topic, Options and Difficulty</p>
+                            </div>
+                            <div class="action-tile" onclick="switchTab('exam-room')">
+                                <span class="tile-icon">✍️</span>
+                                <h4>Take Live Test</h4>
+                                <p>Simulate student submission and test auto-grading engine</p>
+                            </div>
+                            <div class="action-tile" onclick="switchTab('usage-analytics')">
+                                <span class="tile-icon">📊</span>
+                                <h4>Usage Frequency</h4>
+                                <p>Inspect how often questions repeat across papers</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 2: Generator -->
+            <section id="tab-generator" class="tab-content">
+                <div class="card generator-card">
+                    <div class="card-header">
+                        <div>
+                            <h2>Randomized Question Paper Generator</h2>
+                            <p class="card-desc">Configure total questions and difficulty distribution. Enforces zero
+                                duplicate questions per paper.</p>
+                        </div>
+                    </div>
+
+                    <form id="generatorForm" class="generator-form" onsubmit="handleGeneratePaper(event)">
+                        <div class="form-row">
+                            <div class="form-group flex-2">
+                                <label for="genTitle">Test Paper Title *</label>
+                                <input type="text" id="genTitle" class="form-input"
+                                    placeholder="e.g. DBMS Midterm Exam 2026 - Set A" required>
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="genTotalQuestions">Total Questions *</label>
+                                <input type="number" id="genTotalQuestions" class="form-input" min="1" max="100"
+                                    value="10" required onchange="updateDistributionCounts()">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group flex-1">
+                                <label for="genUnit">Filter by Unit (Optional)</label>
+                                <select id="genUnit" class="form-select">
+                                    <option value="">All Units (Full Syllabus)</option>
+                                </select>
+                            </div>
+                            <div class="form-group flex-2">
+                                <label for="genDescription">Description / Notes</label>
+                                <input type="text" id="genDescription" class="form-input"
+                                    placeholder="e.g. 50 Marks End Semester Examination">
+                            </div>
+                        </div>
+
+                        <div class="difficulty-box">
+                            <div class="difficulty-header">
+                                <h4>Difficulty Distribution Mix</h4>
+                                <span id="distroSumBadge" class="badge badge-success">Sum: 100%</span>
+                            </div>
+
+                            <div class="sliders-grid">
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span class="diff-tag easy">EASY</span>
+                                        <span id="easyPctLabel">40% (<span id="easyCountEst">4</span> Qs)</span>
+                                    </div>
+                                    <input type="range" id="genEasyPct" min="0" max="100" step="5" value="40"
+                                        oninput="syncSliders('easy')">
+                                </div>
+
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span class="diff-tag medium">MEDIUM</span>
+                                        <span id="medPctLabel">40% (<span id="medCountEst">4</span> Qs)</span>
+                                    </div>
+                                    <input type="range" id="genMedPct" min="0" max="100" step="5" value="40"
+                                        oninput="syncSliders('medium')">
+                                </div>
+
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span class="diff-tag hard">HARD</span>
+                                        <span id="hardPctLabel">20% (<span id="hardCountEst">2</span> Qs)</span>
+                                    </div>
+                                    <input type="range" id="genHardPct" min="0" max="100" step="5" value="20"
+                                        oninput="syncSliders('hard')">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" id="btnGenerateSubmit" class="btn btn-primary btn-lg">
+                                ⚡ Generate Test Paper Now
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Generated Paper Preview Section -->
+                <div id="generatedPaperPreview" class="generated-preview card hidden">
+                    <!-- Loaded dynamically after generation -->
+                </div>
+            </section>
+
+            <!-- Tab 3: Question Bank -->
+            <section id="tab-questions" class="tab-content">
+                <div class="table-controls card">
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label>Filter by Unit:</label>
+                            <select id="filterQuestionUnit" class="form-select" onchange="loadQuestions()">
+                                <option value="">All Units</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Filter by Difficulty:</label>
+                            <select id="filterQuestionDiff" class="form-select" onchange="loadQuestions()">
+                                <option value="">All Difficulties</option>
+                                <option value="EASY">Easy</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HARD">Hard</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group flex-1">
+                            <label>Search Questions:</label>
+                            <input type="text" id="searchQuestionText" class="form-input"
+                                placeholder="Type keyword to filter questions..." oninput="filterQuestionsClient()">
+                        </div>
+
+                        <button class="btn btn-primary align-end" onclick="openModal('addQuestionModal')">
+                            + Add Question
+                        </button>
+                    </div>
+                </div>
+
+                <div id="questionsContainer" class="questions-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+            <!-- Tab 4: Units Management -->
+            <section id="tab-units" class="tab-content">
+                <div class="section-actions-row">
+                    <h3>Course Units / Modules</h3>
+                    <button class="btn btn-primary" onclick="openModal('addUnitModal')">
+                        + Create New Unit
+                    </button>
+                </div>
+
+                <div id="unitsGrid" class="units-grid">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+            <!-- Tab 5: Generated Papers -->
+            <section id="tab-test-papers" class="tab-content">
+                <div class="section-actions-row">
+                    <h3>All Generated Test Papers</h3>
+                    <button class="btn btn-primary" onclick="openModal('generateModal')">
+                        + Generate New Paper
+                    </button>
+                </div>
+
+                <div id="testPapersContainer" class="test-papers-grid">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+            <!-- Tab 6: Exam Room & Auto-Grading -->
+            <section id="tab-exam-room" class="tab-content">
+                <div class="card exam-setup-card" id="examSetupCard">
+                    <div class="card-header">
+                        <div>
+                            <h2>Student Exam Room & Auto-Grading Engine</h2>
+                            <p class="card-desc">Select a generated test paper, enter your student name, take the exam,
+                                and test the auto-grading system.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group flex-2">
+                            <label for="examPaperSelect">Select Generated Test Paper *</label>
+                            <select id="examPaperSelect" class="form-select">
+                                <option value="">-- Choose a Test Paper --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group flex-2">
+                            <label for="studentNameInput">Student Name *</label>
+                            <input type="text" id="studentNameInput" class="form-input"
+                                placeholder="e.g. Kanish Sharma">
+                        </div>
+
+                        <div class="form-group flex-2">
+                            <label for="studentEmailInput">Student Email (Optional)</label>
+                            <input type="email" id="studentEmailInput" class="form-input"
+                                placeholder="e.g. kanish@example.com">
+                        </div>
+
+                        <div class="form-group flex-1 align-end">
+                            <button class="btn btn-primary btn-block" onclick="startExam()">
+                                Start Test 🚀
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Exam Container -->
+                <div id="activeExamContainer" class="active-exam-container hidden">
+                    <div class="exam-header-bar card">
+                        <div>
+                            <h2 id="activeExamTitle">Test Paper</h2>
+                            <span id="activeExamStudent" class="student-badge">Student: -</span>
+                        </div>
+                        <div class="exam-meta-pills">
+                            <span class="pill" id="activeExamTotalQs">10 Questions</span>
+                            <span class="pill timer-pill" id="examTimer">⏱️ Untimed Mode</span>
+                        </div>
+                    </div>
+
+                    <form id="examSubmissionForm" onsubmit="handleExamSubmit(event)">
+                        <div id="examQuestionsList" class="exam-questions-list">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <div class="exam-footer card">
+                            <button type="button" class="btn btn-secondary" onclick="cancelExam()">Cancel</button>
+                            <button type="submit" id="btnSubmitExam" class="btn btn-success btn-lg">
+                                ✅ Submit Test & Auto-Grade Now
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Exam Result Card -->
+                <div id="examResultCard" class="card exam-result-card hidden">
+                    <!-- Populated dynamically after auto-grading -->
+                </div>
+            </section>
+
+            <!-- Tab 7: Question Usage Analytics -->
+            <section id="tab-usage-analytics" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>Question Usage Frequency Across Generated Papers</h2>
+                            <p class="card-desc">Tracks how often each question appears across test papers to detect
+                                overused or unselected questions.</p>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadUsageFrequency()">🔄 Refresh
+                            Analytics</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table" id="usageTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">ID</th>
+                                    <th>Question Text</th>
+                                    <th style="width: 140px;">Unit</th>
+                                    <th style="width: 120px;">Topic</th>
+                                    <th style="width: 100px;">Difficulty</th>
+                                    <th style="width: 130px;">Usage Count</th>
+                                    <th>Included In Test Papers</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usageTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 8: Attempts History -->
+            <section id="tab-attempts" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>Student Submissions & Evaluation History</h2>
+                            <p class="card-desc">Records of all auto-graded student attempts with exact scores,
+                                percentages, and timestamps.</p>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAttempts()">🔄 Refresh History</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Attempt ID</th>
+                                    <th>Student Name</th>
+                                    <th>Test Paper Title</th>
+                                    <th>Score</th>
+                                    <th>Percentage</th>
+                                    <th>Status</th>
+                                    <th>Submitted At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attemptsTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL: Add Question -->
+    <div id="addQuestionModal" class="modal-backdrop hidden">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Add New Question to Bank</h3>
+                <button class="btn-close" onclick="closeModal('addQuestionModal')">&times;</button>
+            </div>
+            <form id="addQuestionForm" onsubmit="handleAddQuestion(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="qUnit">Unit *</label>
+                        <select id="qUnit" class="form-select" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="qDifficulty">Difficulty *</label>
+                            <select id="qDifficulty" class="form-select" required>
+                                <option value="EASY">Easy</option>
+                                <option value="MEDIUM" selected>Medium</option>
+                                <option value="HARD">Hard</option>
+                            </select>
+                        </div>
+                        <div class="form-group flex-2">
+                            <label for="qTopic">Topic *</label>
+                            <input type="text" id="qTopic" class="form-input"
+                                placeholder="e.g. Normalization, SQL Joins" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="qText">Question Text *</label>
+                        <textarea id="qText" class="form-textarea" rows="3"
+                            placeholder="Enter complete question statement..." required></textarea>
+                    </div>
+
+                    <div class="options-grid">
+                        <div class="form-group">
+                            <label>Option A *</label>
+                            <input type="text" id="qOptionA" class="form-input" placeholder="Statement for option A"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label>Option B *</label>
+                            <input type="text" id="qOptionB" class="form-input" placeholder="Statement for option B"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label>Option C *</label>
+                            <input type="text" id="qOptionC" class="form-input" placeholder="Statement for option C"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label>Option D *</label>
+                            <input type="text" id="qOptionD" class="form-input" placeholder="Statement for option D"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="qCorrectAnswer">Correct Answer *</label>
+                        <select id="qCorrectAnswer" class="form-select" required>
+                            <option value="A">Option A</option>
+                            <option value="B">Option B</option>
+                            <option value="C">Option C</option>
+                            <option value="D">Option D</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('addQuestionModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Question</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Add Unit -->
+    <div id="addUnitModal" class="modal-backdrop hidden">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-header">
+                <h3>Create New Course Unit</h3>
+                <button class="btn-close" onclick="closeModal('addUnitModal')">&times;</button>
+            </div>
+            <form id="addUnitForm" onsubmit="handleAddUnit(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="unitName">Unit Name *</label>
+                        <input type="text" id="unitName" class="form-input" placeholder="e.g. Unit 6: NoSQL Databases"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="unitDesc">Description</label>
+                        <textarea id="unitDesc" class="form-textarea" rows="3"
+                            placeholder="Brief outline of syllabus covered in this unit..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addUnitModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Unit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: View Paper Details -->
+    <div id="viewPaperModal" class="modal-backdrop hidden">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-header">
+                <h3 id="viewPaperModalTitle">Test Paper Details</h3>
+                <button class="btn-close" onclick="closeModal('viewPaperModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="viewPaperModalContent">
+                <!-- Loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('viewPaperModal')">Close</button>
+                <button type="button" class="btn btn-primary" onclick="printTestPaper()">🖨️ Print / Save PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: View Attempt Details -->
+    <div id="viewAttemptModal" class="modal-backdrop hidden">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-header">
+                <h3 id="viewAttemptModalTitle">Attempt Breakdown</h3>
+                <button class="btn-close" onclick="closeModal('viewAttemptModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="viewAttemptModalContent">
+                <!-- Loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('viewAttemptModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Generate Modal Wrapper -->
+    <div id="generateModal" class="modal-backdrop hidden">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Quick Test Paper Generator</h3>
+                <button class="btn-close" onclick="closeModal('generateModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Switch to the Generator workspace to customize difficulty mix sliders, select specific units, and
+                    view live previews.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('generateModal')">Cancel</button>
+                <button type="button" class="btn btn-primary"
+                    onclick="closeModal('generateModal'); switchTab('generator');">Open Generator 🎲</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
